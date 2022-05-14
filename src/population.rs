@@ -1,4 +1,7 @@
-use rand::Rng;
+use rand::{
+    self,
+    distributions::{Distribution, Uniform},
+}; // 0.8.0
 use crate::dna::{Dna, reproduce};
 use crate::random;
 
@@ -56,11 +59,17 @@ impl Population {
 
     pub fn move_to_next_generation(&mut self, charset: &Vec<char>) {
         let mut new_population: Vec<Dna> = vec![];
+
+        let mut rng = rand::thread_rng();
+        let population_range = Uniform::new_inclusive(0, self.pool.len()-1);
+        let gene_range = Uniform::new_inclusive(1, self.target.len()-1);
+        let percentage_range = Uniform::new_inclusive(0, 100);
+
         for _i in 0..self.population_size {
-            let random1 = rand::thread_rng().gen_range(0..self.pool.len());
-            let random2 = rand::thread_rng().gen_range(0..self.pool.len());
-            let mut child = reproduce(&self.population[self.pool[random1] as usize],&self.population[self.pool[random2] as usize]);
-            child.mutate(self.mutation_rate,charset);
+            let random1 = population_range.sample(&mut rng);
+            let random2 = population_range.sample(&mut rng);
+            let mut child = reproduce(&self.population[self.pool[random1] as usize],&self.population[self.pool[random2] as usize], gene_range, &rng);
+            child.mutate(self.mutation_rate,charset,percentage_range,&rng);
             new_population.push(child)
         }
         self.population = new_population;

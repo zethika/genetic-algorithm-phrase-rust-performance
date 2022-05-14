@@ -15,7 +15,7 @@ Though, is that possible in WebAssembly in the first place?
 Or, alternatively, it is simply a matter of how I handle the memory / referencing logic in Rust, which I am not familiar with.  
 
 ***
-### First round of optimizations
+### First round
 Removed unused dependencies and set these values in cargo.toml.
 ```
 [profile.release]
@@ -27,3 +27,12 @@ wasm-opt = ["-O4", "--enable-mutable-globals"]
 ```
 This alone seems to have sped it up dramatically, so it now hovers around 1500 generations pr. second. meaning it is now slightly faster than my plain JS solution.  
 Time to look for more optimizations, I also havn't checked if multithreading is a thing in WebAssembly, or if I can figure out how to use it.
+
+***
+### Second round
+Made use of the Uniform structure to pre-generate the ranges we pick random numbers from, increasing performance some.  
+Also identified one of the heaviest single lines in the system being generating the random number which decides whether a single character should be mutated.  
+Makes sense, since it will be called population_size * gene_length pr. generation.  
+Have yet to find either a working alternative, or a more performant solution to it.
+
+Can now generate around 1750 generations pr. second.

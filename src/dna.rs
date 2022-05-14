@@ -1,5 +1,9 @@
-use rand::Rng;
 use random_number::random;
+use rand::{
+    self,
+    distributions::{Distribution, Uniform},
+};
+use rand::rngs::ThreadRng;
 
 #[derive(Default)]
 pub struct Dna {
@@ -24,10 +28,10 @@ impl Dna {
             }
         }
     }
-    pub fn mutate(&mut self,rate: u8, charset: &Vec<char>) {
+    pub fn mutate(&mut self,rate: u8, charset: &Vec<char>, range: Uniform<u8>, rng: &ThreadRng) {
         let mut genes: Vec<char> = vec![];
         for char in self.genes.iter() {
-            let random = rand::thread_rng().gen_range(0..100);
+            let random = range.sample(&mut rng.to_owned());
             if random < rate {
                 genes.push(charset[random!(..=(charset.len() - 1) as u8) as usize].to_owned());
             }
@@ -40,8 +44,8 @@ impl Dna {
 }
 
 
-pub fn reproduce(parent1: &Dna, parent2: &Dna) -> Dna{
-    let midpoint = rand::thread_rng().gen_range(1..(parent1.genes.len()-1));
+pub fn reproduce(parent1: &Dna, parent2: &Dna, range: Uniform<usize>, rng: &ThreadRng) -> Dna{
+    let midpoint = range.sample(&mut rng.to_owned());
     let mut genes: Vec<char> = vec![];
     genes.append(&mut parent1.genes[0..midpoint].to_vec());
     genes.append(&mut parent2.genes[midpoint..parent2.genes.len()].to_vec());
