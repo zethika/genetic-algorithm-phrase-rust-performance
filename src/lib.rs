@@ -15,7 +15,7 @@ mod random;
 static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
-pub fn calculate_generations(target_string: String, population_size: u16, mutation_rate: u8) -> ReturnValue {
+pub fn calculate_generations(target_string: String, population_size: u16, mutation_rate: u8) -> u32 {
     let charset = random::generate_char_vec();
     let target: Vec<char> = target_string.chars().collect();
     let target_len = target.len();
@@ -31,9 +31,7 @@ pub fn calculate_generations(target_string: String, population_size: u16, mutati
         population.move_to_next_generation(&charset);
     }
 
-    return ReturnValue {
-        generations: population.generation
-    };
+    return population.generation;
 }
 
 #[wasm_bindgen]
