@@ -1,18 +1,9 @@
-mod utils;
-
 use wasm_bindgen::prelude::*;
 use crate::population::Population;
 
 mod dna;
 mod population;
 mod random;
-
-
-// When the `wee_alloc` feature is enabled, use `wee_alloc` as the global
-// allocator.
-#[cfg(feature = "wee_alloc")]
-#[global_allocator]
-static ALLOC: wee_alloc::WeeAlloc = wee_alloc::WeeAlloc::INIT;
 
 #[wasm_bindgen]
 pub fn calculate_generations(target_string: String, population_size: u16, mutation_rate: u8) -> u32 {
@@ -30,6 +21,5 @@ pub fn calculate_generations(target_string: String, population_size: u16, mutati
 
         population.move_to_next_generation(&charset);
     }
-
     return population.generation;
 }
