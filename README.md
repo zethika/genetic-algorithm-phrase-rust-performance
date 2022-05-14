@@ -31,8 +31,8 @@ Time to look for more optimizations, I also havn't checked if multithreading is 
 ***
 ### Second round
 Made use of the Uniform structure to pre-generate the ranges we pick random numbers from, increasing performance some.  
-Also identified one of the heaviest single lines in the system being generating the random number which decides whether a single character should be mutated.  
-Makes sense, since it will be called population_size * gene_length pr. generation.  
+Also identified one of the heaviest single lines in the system; `let random = range.sample(&mut rng.to_owned());` which generates the random number that decides whether a single character should be mutated in DNA.  
+Makes sense, since it will be called `population_size * gene_length` times pr. generation.  
 Have yet to find either a working alternative, or a more performant solution to it.
 
 Can now generate around 1750 generations pr. second.
