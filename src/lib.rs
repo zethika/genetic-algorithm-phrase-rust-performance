@@ -33,8 +33,3 @@ pub fn calculate_generations(target_string: String, population_size: u16, mutati
 
     return population.generation;
 }
-
-#[wasm_bindgen]
-pub struct ReturnValue {
-    generations: u32
-}
