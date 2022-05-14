@@ -1,5 +1,4 @@
 use rand::Rng;
-use crate::random;
 use random_number::random;
 
 #[derive(Default)]
@@ -27,7 +26,7 @@ impl Dna {
     }
     pub fn mutate(&mut self,rate: u8, charset: &Vec<char>) {
         let mut genes: Vec<char> = vec![];
-        for (i,char ) in self.genes.iter().enumerate() {
+        for char in self.genes.iter() {
             let random = rand::thread_rng().gen_range(0..100);
             if random < rate {
                 genes.push(charset[random!(..=(charset.len() - 1) as u8) as usize].to_owned());

@@ -56,7 +56,7 @@ impl Population {
 
     pub fn move_to_next_generation(&mut self, charset: &Vec<char>) {
         let mut new_population: Vec<Dna> = vec![];
-        for i in 0..self.population_size {
+        for _i in 0..self.population_size {
             let random1 = rand::thread_rng().gen_range(0..self.pool.len());
             let random2 = rand::thread_rng().gen_range(0..self.pool.len());
             let mut child = reproduce(&self.population[self.pool[random1] as usize],&self.population[self.pool[random2] as usize]);
