@@ -2,8 +2,11 @@ use rand::{
     self,
     distributions::{Distribution, Uniform},
 }; // 0.8.0
+use rand::Rng;
 use crate::dna::{Dna, reproduce};
 use crate::random;
+use rayon::prelude::*;
+use rand::rngs::ThreadRng;
 
 pub struct Population {
     population_size: u16,
@@ -58,24 +61,25 @@ impl Population {
     }
 
     pub fn move_to_next_generation(&mut self, charset: &Vec<char>) {
-        let mut new_population: Vec<Dna> = vec![];
 
-        let mut rng = rand::thread_rng();
         let population_range = Uniform::new_inclusive(0, self.pool.len()-1);
         let gene_range = Uniform::new_inclusive(1, self.target.len()-1);
-        let percentage_range = Uniform::new_inclusive(0, 100);
+        let percentage_range: Uniform<u8> = Uniform::new_inclusive(0, 100);
 
-        for _i in 0..self.population_size {
-            let random1 = population_range.sample(&mut rng);
-            let random2 = population_range.sample(&mut rng);
-            let mut child = reproduce(&self.population[self.pool[random1] as usize],&self.population[self.pool[random2] as usize], gene_range, &rng);
-            child.mutate(self.mutation_rate,charset,percentage_range,&rng);
-            new_population.push(child)
-        }
-        self.population = new_population;
+        let result: Vec<Dna> = vec![0;self.population_size as usize].par_iter().map(|i| create_child(&self.population,&self.pool,self.mutation_rate,charset,population_range,gene_range,percentage_range)).collect();
+        self.population = result;
         self.generation += 1;
     }
 }
+fn create_child(population: &Vec<Dna>, pool: &Vec<u16>, mutation_rate: u8, charset: &Vec<char>, population_range: Uniform<usize>,gene_range: Uniform<usize>,percentage_range: Uniform<u8>) -> Dna{
+    let mut rng = rand::thread_rng();
+    let random1 = population_range.sample(&mut rng);
+    let random2 = population_range.sample(&mut rng);
+    let mut child = reproduce(&population[pool[random1] as usize],&population[pool[random2] as usize], gene_range, &rng);
+    child.mutate(mutation_rate,charset,percentage_range,&rng);
+    return child
+}
+
 
 fn map_value_to_range(value: i32, x1: i32, y1: i32, x2: i32, y2: i32) -> i32 {
     return (value - x1) * (y2 - x2) / (y1 - x1) + x2;

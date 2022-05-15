@@ -1,5 +1,6 @@
 use wasm_bindgen::prelude::*;
 use crate::population::Population;
+pub use wasm_bindgen_rayon::init_thread_pool;
 
 mod dna;
 mod population;
@@ -22,4 +23,9 @@ pub fn calculate_generations(target_string: String, population_size: u16, mutati
         population.move_to_next_generation(&charset);
     }
     return population.generation;
+}
+
+#[wasm_bindgen]
+pub fn greet() -> String {
+    return "Hello".to_owned();
 }

@@ -3,6 +3,7 @@ import Controls from "@/components/Controls.vue";
 import {useControlsStore} from "@/store/controls";
 import {onMounted, reactive, watch} from "vue";
 import Population from "@/classes/Population";
+import * as Comlink from 'comlink';
 const store = useControlsStore();
 const allowedSpeed = 1000/30;
 let population = new Population(
@@ -11,22 +12,47 @@ let population = new Population(
     store.phrase
 );
 import init from 'genetic-algorithm-phrase-rust'
-import {count} from 'genetic-algorithm-phrase-rust'
-onMounted(() => {
+import {calculate_generations,initThreadPool} from 'genetic-algorithm-phrase-rust'
 
-   const start = new Date().getTime();
-    let counter = 0;
-    for(let i = 0; i < 2000000000; i++){
-        counter++;
-    }
-    console.log('JS took '+(new Date().getTime() - start))
+onMounted(async () => {
+/*
+    console.log(self.crossOriginIsolated)
+    await init();
+    await initThreadPool(navigator.hardwareConcurrency);
 
-   init().then((exports) => {
-       const start = new Date().getTime();
-       const counter = count()
-       console.log(counter)
-       console.log('Rust took '+(new Date().getTime() - start))
-    })
+    const counter = await calculate_generations('To be or not to be.',200, 1);
+*/
+
+    /*const worker = new Worker("worker.js", { type: "module" });
+    worker.addEventListener("message", ({ data }) => {
+        console.log(data)
+    });
+    worker.postMessage('yoa');*/
+    const worker = new Worker("worker.js", { type: "module" });
+    worker.addEventListener("message", ({ data }) => {
+        if(data === 'init_done')
+        {
+            console.log('ready')
+            worker.postMessage('calculate');
+        }
+        else
+        {
+            console.log(data)
+        }
+    });
+
+    worker.postMessage('init');
+
+
+   /* await obj.init()
+    console.log('hey')
+    console.log(obj.calculate_generations())
+    const start = new Date().getTime();
+    const counter = await obj.calculate_generations('To be or not to be.',200, 1);
+    const diff = new Date().getTime()-start;
+    console.log('Rust took '+(diff)+ ' at '+(counter/(diff/1000))+' generations pr. second')
+    state.startTime = new Date().getTime();
+    runIteration();*/
 })
 
 const state = reactive({
@@ -34,11 +60,12 @@ const state = reactive({
     phrases: [] as Array<string>,
     generations: 0,
     averageFitness: 0,
-    bestFitness: 0
+    bestFitness: 0,
+    totalTime: 0,
+    startTime: 0,
 })
 
 function runIteration(){
-    console.log('iteration')
     const iterationStart = new Date().getTime();
 
     population.calculatePopulationFitness()
@@ -49,19 +76,22 @@ function runIteration(){
     population.evaluate();
 
     if(population.hasTarget)
+    {
         store.running = false;
+        const diff = new Date().getTime()-state.startTime;
+        console.log('JS took '+(diff)+ ' at '+(state.generations/(diff/1000))+' generations pr. second')
+    }
 
     state.averageFitness = population.averageFitness;
     state.phrases = population.population.map(dna => dna.phrase());
     state.bestPhrase = population.highestFitness.dna === null ? '' : population.highestFitness.dna?.phrase()
     state.bestFitness = population.highestFitness.number
     state.generations = population.generation;
+    const diff = new Date().getTime() - iterationStart
+    state.totalTime += diff;
     if(store.running)
     {
-        const diff = new Date().getTime() - iterationStart
-        setTimeout(() => {
-            runIteration()
-        },diff > allowedSpeed ? 0 : allowedSpeed-diff )
+         runIteration()
     }
 }
 
@@ -99,6 +129,7 @@ function reset(){
             <p>Generation: {{state.generations}}</p>
             <p>Average fitness: {{state.averageFitness.toFixed(2)}}%</p>
             <p>Best fitness: {{state.bestFitness}}</p>
+            <p>Generations pr. second: {{state.generations / (state.totalTime/1000)}}</p>
             <p class="mt-4">Phrases:</p>
             <p v-for="phrase in state.phrases.slice(0,50)" class="whitespace-nowrap">{{phrase}}</p>
         </div>

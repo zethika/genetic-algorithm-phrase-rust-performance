@@ -36,3 +36,14 @@ Makes sense, since it will be called `population_size * gene_length` times pr. g
 Have yet to find either a working alternative, or a more performant solution to it.
 
 Can now generate around 1750 generations pr. second.
+
+***
+### Third round
+Attempted to implement multithreading via [rayon](https://crates.io/crates/rayon) on the rust side, and web workers on the frontend.  
+Sadly, it seems this is either not implemented correctly (probably by me) on the web side via the [wasm-bindgen-rayon](https://github.com/GoogleChromeLabs/wasm-bindgen-rayon) module, since there is a massive performance drop.  
+Alternatively, the problem comes from the overhead involved when the different web workers communicate with each other (which is how rayon implements multithreading in the browser).  
+I'm guessing, since in absolute numbers the "jobs" I've sent to the individual workers (calculating next child from 2 parents) are small, the overhead involved makes it not worth it.
+
+With this setup, we can only calculate 0.8-1.2 generations pr. second, so effectively useless. 
+Whereas the rust script itself can handle 6-7k generations pr.second.  
+Either I'm missing something with how to use the multithreading in the browser (-entirely- possible), or the task is simply too small to make it worth it.

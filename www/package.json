@@ -8,6 +8,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "comlink": "^4.3.1",
     "genetic-algorithm-phrase-rust": "file:../pkg",
     "pinia": "^2.0.14",
     "vue": "^3.2.25"
